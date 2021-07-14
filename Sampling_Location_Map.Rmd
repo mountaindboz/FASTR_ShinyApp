@@ -32,11 +32,12 @@ library(leaflet)
 # Import and Prepare Data
 
 ```{r import data, message = FALSE}
-fish_samp_loc <- read_csv("FISH_MAN_AllIEPstations_20200527.csv")
+fish_samp_loc <- read_csv("Stations_Fish_NDFA_2021-01-13.csv")
 ```
 
 ```{r convert df to sf}
 fish_samp_loc_sf <- fish_samp_loc %>% 
+  select(-geometry) %>% 
   st_as_sf(
     coords = c("Longitude", "Latitude"),
     crs = 4326,
@@ -46,13 +47,13 @@ fish_samp_loc_sf <- fish_samp_loc %>%
 
 ```{r create leaflet map}
 # Define color palette for Surveys
-color_pal <- colorFactor(palette = "plasma", domain = fish_samp_loc_sf$Survey)
+color_pal <- colorFactor(palette = "plasma", domain = fish_samp_loc_sf$Survey.x)
 
 leaflet(fish_samp_loc_sf) %>% 
   addTiles() %>% 
   addCircleMarkers(
     radius = 3,
-    fillColor = ~color_pal(Survey),
+    fillColor = ~color_pal(Survey.x),
     fillOpacity = 1,
     weight = 0.5,
     color = "black",
@@ -61,13 +62,13 @@ leaflet(fish_samp_loc_sf) %>%
       "Station: ",
       fish_samp_loc_sf$StationCode,
       ", Survey: ",
-      fish_samp_loc_sf$Survey
+      fish_samp_loc_sf$Survey.x
     )
   ) %>% 
   addLegend(
     position = "bottomleft",
     pal = color_pal,
-    values = ~Survey,
+    values = ~Survey.x,
     title = "FASTR Fish Surveys"
   )
 ```
