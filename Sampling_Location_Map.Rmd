@@ -32,16 +32,40 @@ library(leaflet)
 # Import and Prepare Data
 
 ```{r import data, message = FALSE}
-fish_samp_loc <- read_csv("Stations_Fish_NDFA_2021-01-13.csv")
+df_samp_loc <- read_csv("Stations_Fish_NDFA_2021-01-13.csv")
 ```
 
 ```{r convert df to sf}
-fish_samp_loc_sf <- fish_samp_loc %>% 
+sf_samp_loc <- df_samp_loc %>% 
   select(-geometry) %>% 
   st_as_sf(
     coords = c("Longitude", "Latitude"),
     crs = 4326,
     remove = FALSE
+  )
+```
+
+```{r split up sf}
+# Create 3 different sf objects by data type
+# Fish stations:
+sf_samp_loc_fish <- sf_samp_loc %>% 
+  filter(!Survey.x %in% c("EMP", "NDFA", "USGS")) %>% 
+  mutate(
+    Type = case_when(
+      Survey.x %in% c("EDSM", "FMWT", "Townet") ~ "Tow",
+      Survey.x %in% c("DJFMP", "Yolo") ~ "Seine",
+      TRUE ~ "Rescues"
+    )
+  )
+
+# WQ stations:
+sf_samp_loc_wq <- sf_samp_loc %>% filter(Survey.x %in% c("EMP", "NDFA", "USGS"))
+
+# Lower Trophic stations:
+sf_samp_loc_lt <- sf_samp_loc %>% 
+  filter(
+    Survey.x == "NDFA",
+    !StationCode %in% c("DWT", "SHR", "WWT")
   )
 ```
 
